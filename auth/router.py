@@ -27,6 +27,21 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
 )
 async def create_user(create_user_request: AuthUserRequest, db: db_dependency):
+    """Register a new user account.
+
+    Checks for duplicate email before inserting. Password is hashed
+    with bcrypt before being stored.
+
+    Args:
+        create_user_request: Request body containing email and password.
+        db: Active database session injected by FastAPI dependency.
+
+    Returns:
+        RegisterResponse: The new user's id, email, and created_at timestamp.
+
+    Raises:
+        HTTPException: 409 if the email is already registered.
+    """
     search_user = (
         db.query(User).filter(User.user_email == create_user_request.email).first()
     )
@@ -53,6 +68,22 @@ async def create_user(create_user_request: AuthUserRequest, db: db_dependency):
     response_model=LoginResponse,
 )
 async def login_user(db: db_dependency, login_user_request: AuthUserRequest):
+    """Login the user account.
+
+    Checks for email exists and password is matching or not from db. After
+    successful verification, generates access token, refresh token and token
+    type.
+
+    Args:
+        login_user_request: Request body containing email and password.
+        db: Active database session injected by FastAPI dependency.
+
+    Returns:
+        LoginResponse: access token, refresh token and token type.
+
+    Raises:
+        HTTPException: 401 if the credentials are invalid.
+    """
     exist_user = (
         db.query(User).filter(User.user_email == login_user_request.email).first()
     )
@@ -83,6 +114,22 @@ async def login_user(db: db_dependency, login_user_request: AuthUserRequest):
     status_code=status.HTTP_200_OK,
 )
 async def token_refresh(request: RefreshTokenRequest, db: db_dependency):
+    """Exchange a refresh token for a new access and refresh token pair.
+
+    Validates the token exists in database, is not expired and revoked value is None.
+    After successfully validating the token, mark the token as revoked and assign
+    new access token and refresh token
+
+    Args:
+        request: Request body containing the refresh token string.
+        db: Active database session injected by FastAPI dependency.
+
+    Returns:
+        LoginResponse: access token, refresh token and token type.
+
+    Raises:
+        HTTPException: 401 if the token is invalid.
+    """
     search_token = db.query(RefreshToken).filter(RefreshToken.revoked_at == None).all()
     db_token = None
     for token in search_token:
@@ -125,6 +172,18 @@ async def token_refresh(request: RefreshTokenRequest, db: db_dependency):
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def logout_user(db: db_dependency, token=Depends(AuthDependency)):
+    """Logout user from all session
+
+    Fetch user id using `get_current_user` function and revoked each token
+    from the database
+
+    Args:
+        token: Request body containing access token
+        db: Active database session injected by FastAPI dependency.
+
+    Raises:
+        HTTPException: 401 if the access token is missing or invalid.
+    """
     fetch_user_id = get_current_user(db, token)
     user_session = (
         db.query(RefreshToken).filter(RefreshToken.user_id == fetch_user_id).all()

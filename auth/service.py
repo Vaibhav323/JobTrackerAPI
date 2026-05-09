@@ -6,6 +6,7 @@ import secrets
 # UTIL Function
 from auth.utils import bcrypt_context
 from models import User, RefreshToken
+from config import REFRESH_TOKEN_EXPIRE_DAYS
 
 
 def create_refresh_token(user_id: str, db) -> str:
@@ -34,7 +35,8 @@ def create_refresh_token(user_id: str, db) -> str:
             refresh_token
         ),  # I am using bcrypt at initial point, will change in future as it is heavy for hashing and verifying.
         created_at=dt.datetime.now(dt.timezone.utc),
-        expires_at=dt.datetime.now(dt.timezone.utc) + dt.timedelta(days=7),
+        expires_at=dt.datetime.now(dt.timezone.utc)
+        + dt.timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
     )
     db.add(db_token)
     db.commit()

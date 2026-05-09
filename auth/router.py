@@ -5,7 +5,11 @@ from jose import jwt
 import datetime as dt
 
 # Local Import
-from config import SECRET_KEY, ALGORITHM
+from config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+)
 from database import db_dependency
 from models import User, RefreshToken
 from auth.utils import bcrypt_context, get_current_user, AuthDependency
@@ -93,7 +97,9 @@ async def login_user(db: db_dependency, login_user_request: AuthUserRequest):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Credentials"
         )
-    access_token_time = dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=15)
+    access_token_time = dt.datetime.now(dt.timezone.utc) + dt.timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
     access_token = jwt.encode(
         {"sub": exist_user.id, "exp": access_token_time},
         SECRET_KEY,
@@ -152,7 +158,9 @@ async def token_refresh(request: RefreshTokenRequest, db: db_dependency):
             detail="Invalid Token",
         )
     db_token.revoked_at = dt.datetime.now(dt.timezone.utc)
-    access_token_time = dt.datetime.now(dt.timezone.utc) + dt.timedelta(minutes=15)
+    access_token_time = dt.datetime.now(dt.timezone.utc) + dt.timedelta(
+        minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+    )
     access_token = jwt.encode(
         {"sub": db_token.user_id, "exp": access_token_time},
         SECRET_KEY,

@@ -197,5 +197,6 @@ async def logout_user(db: db_dependency, token=Depends(AuthDependency)):
         db.query(RefreshToken).filter(RefreshToken.user_id == fetch_user_id).all()
     )
     for session in user_session:
-        session.revoked_at = dt.datetime.now(dt.timezone.utc)
+        if not session.revoked_at:
+            session.revoked_at = dt.datetime.now(dt.timezone.utc)
     db.commit()

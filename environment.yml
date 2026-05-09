@@ -1,0 +1,16 @@
+name: job-tracker
+channels:
+  - defaults
+  - conda-forge
+
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+    - fastapi[standard]
+    - passlib[bcrypt]
+    - bcrypt==4.0.1
+    - python-jose[cryptography]
+    - sqlalchemy
+    - python-dotenv
+    

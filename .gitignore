@@ -1,0 +1,11 @@
+# Environment Variable
+.env
+
+# Local db
+*.db
+# Roadmap will be readme, work in progress
+ROADMAP.md
+
+# All unncessary python directories
+**/__pycache__
+**/.vscode

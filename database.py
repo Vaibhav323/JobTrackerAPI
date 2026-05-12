@@ -29,4 +29,4 @@ def get_db():
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
-Base.metadata.create_all(bind=engine)
+
